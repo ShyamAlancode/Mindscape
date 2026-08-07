@@ -1,0 +1,30 @@
+{
+  "name": "mindscape-learning",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "quality": "npm run lint && npm test"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@hono/node-server": "^1.13.0",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^16.4.0",
+    "groq-sdk": "^1.1.2",
+    "hono": "^4.6.0",
+    "jsonwebtoken": "^9.0.3",
+    "katex": "^0.16.25",
+    "stripe": "^22.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0"
+  }
+}

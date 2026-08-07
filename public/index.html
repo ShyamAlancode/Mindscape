@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spatial Math AI — AI Spatial Reasoning Tutor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./node_modules/katex/dist/katex.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="app-shell">
+
+      <!-- ============ TOP BAR ============ -->
+      <header class="topbar">
+        <div class="brand-lockup">
+          <p class="eyebrow">Spatial Math AI</p>
+          <h1>AI Spatial Reasoning Tutor</h1>
+        </div>
+
+        <div class="topbar-tools">
+          <div class="tool-cluster" aria-label="Primary tools">
+            <button id="startBtn" class="tool-btn is-start" data-tooltip="Start Camera">
+              <span class="tool-label">Start</span>
+            </button>
+            <button id="stopBtn" class="tool-btn is-stop" data-tooltip="Stop" disabled>
+              <span class="tool-label">Stop</span>
+            </button>
+            <button id="undoBtn" class="tool-btn is-undo" data-tooltip="Undo">
+              <span class="tool-label">Undo</span>
+            </button>
+            <button id="clearBtn" class="tool-btn is-clear" data-tooltip="Clear">
+              <span class="tool-label">Clear</span>
+            </button>
+            <button id="saveSceneBtn" class="tool-btn is-save" data-tooltip="Save">
+              <span class="tool-label">Save</span>
+            </button>
+            <button id="loadSceneBtn" class="tool-btn is-load" data-tooltip="Load">
+              <span class="tool-label">Load</span>
+            </button>
+            <input id="loadSceneInput" type="file" accept="application/json" hidden />
+          </div>
+        </div>
+      </header>
+
+      <!-- ============ WORKSPACE ============ -->
+      <section class="workspace">
+
+        <!-- LEFT PANEL: Single sidebar with tabs -->
+        <aside class="left-panel">
+
+          <!-- Tab Navigation -->
+          <nav class="panel-tabs">
+            <button class="panel-tab active" data-tab="tutor">Tutor</button>
+            <button class="panel-tab" data-tab="scene">Scene</button>
+          </nav>
+
+          <!-- TUTOR TAB CONTENT -->
+          <div class="tab-content active" data-content="tutor">
+
+            <section id="questionSection" class="question-section">
+              <button id="lessonPanelToggle" class="lesson-panel-toggle" type="button" aria-expanded="true">
+                <div class="lesson-panel-copy">
+                  <h2>What would you like to explore?</h2>
+                  <p id="lessonPanelSummary" class="question-summary hidden"></p>
+                </div>
+                <span class="lesson-panel-icon" aria-hidden="true">&#9662;</span>
+              </button>
+
+              <section id="formulaCard" class="formula-card hidden" aria-live="polite">
+                <div class="formula-card-head">
+                  <h3 id="formulaCardTitle" class="formula-card-title">Formula</h3>
+                  <div class="formula-card-actions">
+                    <button id="formulaCardRevealBtn" class="plan-btn btn-secondary" type="button">View Solution</button>
+                    <button id="formulaCardCloseBtn" class="formula-card-dismiss" type="button">&times;</button>
+                  </div>
+                </div>
+                <div id="formulaCardEquation" class="formula-card-equation"></div>
+                <div id="formulaCardExplanation" class="formula-card-copy"></div>
+              </section>
+
+              <section id="solutionDrawer" class="solution-drawer hidden" aria-live="polite">
+                <div class="formula-card-head">
+                  <h3 id="solutionDrawerTitle" class="formula-card-title">Worked Solution</h3>
+                  <button id="solutionDrawerClose" class="formula-card-dismiss" type="button">&times;</button>
+                </div>
+                <div id="solutionDrawerAnswer" class="solution-drawer-answer hidden">
+                  <p class="solution-step-index">Final Answer</p>
+                  <div id="solutionDrawerAnswerValue" class="solution-drawer-answer-value"></div>
+                </div>
+                <div id="solutionDrawerSteps" class="solution-drawer-steps"></div>
+              </section>
+
+              <div id="questionSectionBody" class="question-section-body">
+                <div class="question-input-wrap">
+                  <textarea
+                    id="questionInput"
+                    class="question-textarea"
+                    placeholder="Type a question or paste a diagram...&#10;e.g. &quot;What happens to the volume when you double the radius of a cylinder?&quot;"
+                    rows="2"
+                  ></textarea>
+                  <div id="questionMathPreview" class="composer-math-preview hidden" aria-live="polite"></div>
+                  <div class="question-upload-row">
+                    <label for="questionImageInput" id="questionImageTrigger" class="question-upload-btn">Attach Image</label>
+                    <input id="questionImageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                    <div id="questionImageMeta" class="question-image-meta hidden"></div>
+                    <button id="questionImageClear" class="question-upload-clear hidden" type="button">Remove</button>
+                  </div>
+                  <div id="questionImagePreview" class="question-image-preview hidden">
+                    <img id="questionImageThumb" alt="Uploaded diagram preview" />
+                  </div>
+                  <button id="questionSubmit" class="question-submit-btn" type="button">
+                    <span class="submit-icon">&#10148;</span>
+                    <span>Explore</span>
+                  </button>
+                </div>
+                <div id="questionStatus" class="question-status hidden"></div>
+              </div>
+
+              <button id="newQuestionBtn" class="new-question-btn hidden" type="button">New Question</button>
+            </section>
+
+            <section class="chat-lesson-shell">
+              <div id="stageRail" class="stage-rail hidden">
+                <span id="stageRailProgress" class="stage-rail-step-pill">1 / 3</span>
+                <p id="stageRailGoal" class="stage-rail-goal"></p>
+                <button id="stageRailNext" class="stage-rail-next hidden" type="button">Next</button>
+                <h3 id="stageRailTitle" class="stage-rail-title hidden"></h3>
+              </div>
+
+              <div id="chatMessages" class="chat-messages tutor-thread">
+                <div class="chat-welcome">
+                  <p class="chat-welcome-title">Let's explore together</p>
+                  <p class="chat-welcome-text">Ask a question and I'll build a 3D scene to help you see the idea.</p>
+                </div>
+              </div>
+
+              <div id="chatCheckpoint" class="chat-checkpoint hidden">
+                <p id="chatCheckpointPrompt" class="chat-checkpoint-prompt">Does this look correct?</p>
+                <div class="chat-checkpoint-actions">
+                  <button id="checkpointYesBtn" class="plan-btn btn-secondary" type="button">Yes, continue</button>
+                  <button id="checkpointUnsureBtn" class="plan-btn btn-ghost" type="button">I'm not sure</button>
+                </div>
+              </div>
+
+              <div class="chat-composer">
+                <div class="chat-input-wrap">
+                  <div id="voiceControl" class="voice-control">
+                    <div class="mic-ring" aria-hidden="true"></div>
+                    <button id="voiceRecordBtn" class="voice-mic-btn" type="button" aria-label="Voice input">&#127908;</button>
+                  </div>
+                  <textarea
+                    id="chatInput"
+                    class="chat-input"
+                    data-composer-input
+                    data-default-placeholder="Ask anything about the scene..."
+                    placeholder="What do you think happens next?"
+                    rows="1"
+                  ></textarea>
+                  <div id="voiceBars" class="voice-bars" style="display:none" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <button id="chatSend" class="chat-send-btn" type="button">&#10148;</button>
+                </div>
+                <div id="chatMathPreview" class="composer-math-preview hidden" aria-live="polite"></div>
+                <p id="voiceStatus" class="voice-status-text hidden"></p>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- SCENE TAB CONTENT -->
+          <div class="tab-content" data-content="scene">
+
+            <section class="scene-validation-section">
+              <div class="card-heading">
+                <h2>Lesson Status</h2>
+              </div>
+              <div id="sceneValidation" class="scene-validation">
+                <p class="muted-text">The tutor will evaluate your scene as you build.</p>
+              </div>
+              <div id="cameraBookmarkList" class="camera-bookmark-list"></div>
+            </section>
+
+            <!-- Shape Controls -->
+            <section class="shape-controls-section" hidden>
+              <div class="card-heading">
+                <h2>Create Object</h2>
+              </div>
+              <div class="shape-controls">
+                <label class="field">
+                  <span>Shape</span>
+                  <select id="shapeType">
+                    <option value="cube">Cube</option>
+                    <option value="cuboid">Cuboid</option>
+                    <option value="sphere">Sphere</option>
+                    <option value="cylinder">Cylinder</option>
+                    <option value="cone">Cone</option>
+                    <option value="pyramid">Pyramid</option>
+                    <option value="plane">Plane</option>
+                    <option value="pointMarker">Point</option>
+                    <option value="line">Line</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Color</span>
+                  <input id="colorInput" type="color" value="#7cf7e4" />
+                </label>
+              </div>
+            </section>
+
+            <!-- Status -->
+            <section class="status-section" hidden>
+              <div class="card-heading">
+                <h2>Status</h2>
+              </div>
+              <p id="status" class="status" data-state="idle">Idle</p>
+              <p id="intentBadge" class="status" data-state="idle">Intent: waiting</p>
+            </section>
+
+            <!-- Object List -->
+            <section class="object-section">
+              <div class="card-heading">
+                <h2>Objects</h2>
+                <span id="objectCount" class="pill">0</span>
+              </div>
+              <div id="objectList" class="object-list"></div>
+            </section>
+
+            <!-- Debug -->
+            <pre id="debugState" class="debug-box hidden">{ "handsDetected": false }</pre>
+
+          </div>
+
+        </aside>
+
+        <!-- CENTER: 3D Viewport -->
+        <section class="viewport-panel">
+          <div class="stage-wrap">
+            <button id="resetViewSceneBtn" class="scene-reset-btn" type="button">Reset View</button>
+
+            <!-- Walkthrough step indicator (shown during tutoring) -->
+            <div id="stepIndicator" class="step-indicator hidden">
+              <button id="stepPrev" class="step-nav-btn" type="button" disabled>&#9664;</button>
+              <span id="stepLabel" class="step-label">Step 1 / 3</span>
+              <button id="stepNext" class="step-nav-btn" type="button">&#9654;</button>
+            </div>
+
+            <div class="stage" id="worldMount"></div>
+            <canvas id="overlay"></canvas>
+            <video id="webcam" autoplay playsinline muted></video>
+            <div id="mousePlaceMenu" class="mouse-place-menu hidden" role="menu" aria-hidden="true">
+              <button id="mousePlaceAction" class="mouse-place-action" type="button" role="menuitem">Place Object</button>
+            </div>
+            <aside id="unfoldDrawer" class="unfold-drawer hidden" aria-hidden="true">
+              <div class="unfold-drawer-head">
+                <div>
+                  <p class="eyebrow">Unfold View</p>
+                  <h2 id="unfoldTitle">Surface Breakdown</h2>
+                </div>
+                <button id="unfoldCloseBtn" class="unfold-close-btn" type="button" aria-label="Close unfold panel">&times;</button>
+              </div>
+              <div class="unfold-drawer-body">
+                <p id="unfoldSubtitle" class="muted-text">Right click a solid to inspect its 2D net.</p>
+                <div id="unfoldStats" class="unfold-stats"></div>
+                <div id="unfoldFormula" class="unfold-formula"></div>
+                <div id="unfoldBreakdown" class="unfold-breakdown"></div>
+                <div id="unfoldNet" class="unfold-net"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+      <!-- ============ FLOATING CHATBOT ============ -->
+      <button id="floatingChatToggle" class="floating-chat-toggle" aria-label="Open Tutor Chatbot">
+        <span class="chat-icon">&#128172;</span>
+      </button>
+
+      <section id="floatingChatbot" class="floating-chatbot hidden">
+        <div class="floating-chatbot-header">
+          <h3>Tutor Chat</h3>
+          <button id="floatingChatClose">&times;</button>
+        </div>
+        <div id="floatingChatHistory" class="floating-chatbot-history">
+          <div class="chat-message assistant">
+            <p>Hi! I see you are working on a 3D problem. Where are you stuck?</p>
+          </div>
+        </div>
+        <form id="floatingChatForm" class="floating-chatbot-form">
+          <textarea id="floatingChatInput" placeholder="Why did we use the cross product?" rows="1"></textarea>
+          <button type="submit">&#10148;</button>
+        </form>
+      </section>
+
+    </main>
+
+    <script type="module" src="./src/main.js?v=2"></script>
+  </body>
+</html>
