@@ -1,4 +1,3 @@
-import { PollyClient, SynthesizeSpeechCommand } from "@aws-sdk/client-polly";
 import { buildSolutionRevealText, isExplicitSolutionRequest } from "../../src/core/tutorSolution.js";
 import { evaluateBuild } from "./buildEvaluator.js";
 import { evaluateConcept, isTrivialInteraction } from "./conceptEvaluator.js";
@@ -33,19 +32,27 @@ Voice delivery rules:
 - Never mention hidden system logic or internal evaluation.`;
 
 let pollyClient = null;
+let PollyClientClass = null;
 
-function getPollyClient() {
+async function getPollyClient() {
   if (!pollyClient) {
-    pollyClient = new PollyClient({
-      region: process.env.AWS_REGION || "us-east-1",
-      credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
-        ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-          sessionToken: process.env.AWS_SESSION_TOKEN || undefined,
-        }
-        : undefined,
-    });
+    try {
+      const pollyModule = await import("@aws-sdk/client-polly");
+      PollyClientClass = pollyModule.PollyClient;
+      pollyClient = new PollyClientClass({
+        region: process.env.AWS_REGION || "us-east-1",
+        credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+          ? {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            sessionToken: process.env.AWS_SESSION_TOKEN || undefined,
+          }
+          : undefined,
+      });
+    } catch (err) {
+      console.warn("AWS Polly SDK not available:", err?.message || err);
+      return null;
+    }
   }
   return pollyClient;
 }
@@ -140,7 +147,16 @@ function voiceMetaShape(meta = null) {
 
 async function synthesizeAssistantAudio({ assistantText = "", voiceId = null }) {
   try {
-    const pollyResponse = await getPollyClient().send(new SynthesizeSpeechCommand({
+    const client = await getPollyClient();
+    if (!client) {
+      return {
+        audioChunks: [],
+        sampleRateHertz: POLLY_PCM_SAMPLE_RATE,
+        audioFallbackUsed: true,
+      };
+    }
+    const { SynthesizeSpeechCommand } = await import("@aws-sdk/client-polly");
+    const pollyResponse = await client.send(new SynthesizeSpeechCommand({
       Engine: "neural",
       OutputFormat: "pcm",
       SampleRate: String(POLLY_PCM_SAMPLE_RATE),
