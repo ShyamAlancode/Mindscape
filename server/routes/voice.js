@@ -42,6 +42,26 @@ export function createVoiceRoute({
     }
   });
 
+  voiceRoute.post("/transcribe", async (c) => {
+    try {
+      const { audioBase64 = "", mimeType = "audio/wav" } = await c.req.json();
+      if (!audioBase64 || typeof audioBase64 !== "string") {
+        return c.json({ error: "audioBase64 is required" }, 400);
+      }
+
+      const { invokeTranscriptionWithModelFailover } = await import("../services/modelInvoker.js");
+      const transcript = await invokeTranscriptionWithModelFailover("transcription", {
+        audioBase64,
+        mimeType,
+      });
+
+      return c.json({ text: typeof transcript === "string" ? transcript : transcript?.text || "" });
+    } catch (error) {
+      console.error("Voice transcribe route error:", error);
+      return c.json({ error: error.message || "Internal server error" }, 500);
+    }
+  });
+
   voiceRoute.post("/session", async (c) => {
     try {
       return c.json(sessionManager.createSession());
