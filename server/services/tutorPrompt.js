@@ -2,7 +2,7 @@ import { normalizeScenePlan } from "../../src/ai/planSchema.js";
 
 function summarizeScene(snapshot) {
   return (snapshot?.objects || [])
-    .map((objectSpec) => `${objectSpec.label || objectSpec.id || "object"}: ${objectSpec.shape} ${JSON.stringify(objectSpec.params)}`)
+    .map((objectSpec) => `${objectSpec.label || objectSpec.id || "object"}: ${objectSpec.shape} params=${JSON.stringify(objectSpec.params)} metadata=${JSON.stringify(objectSpec.metadata || {})}`)
     .join("\n");
 }
 

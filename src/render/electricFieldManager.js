@@ -281,10 +281,108 @@ export class ElectricFieldManager {
     this.group.add(this.particles);
   }
 
+  setSimulationPlay(playing) {
+    this.simulationRunning = playing;
+  }
+
+  rebuildCoulombForceVectors(charges = []) {
+    this.coulombLines?.geometry?.dispose?.();
+    this.coulombLines?.material?.dispose?.();
+    this.group.remove(this.coulombLines);
+    this.coulombLines = null;
+
+    if (charges.length < 2) return;
+
+    const positions = [];
+    const colors = [];
+    const COULOMB_K = 2.5;
+
+    for (let i = 0; i < charges.length; i += 1) {
+      const chargeA = charges[i];
+      const netForce = new THREE.Vector3();
+
+      for (let j = 0; j < charges.length; j += 1) {
+        if (i === j) continue;
+        const chargeB = charges[j];
+        const rVec = chargeA.position.clone().sub(chargeB.position);
+        const distSq = Math.max(0.25, rVec.lengthSq());
+        const forceMag = (COULOMB_K * chargeA.charge * chargeB.charge) / distSq;
+        netForce.add(rVec.normalize().multiplyScalar(forceMag));
+      }
+
+      const forceLen = netForce.length();
+      if (forceLen > 0.01) {
+        const origin = chargeA.position.clone();
+        const dir = netForce.clone().normalize();
+        const arrowLength = THREE.MathUtils.clamp(forceLen * 0.4, 0.4, 2.2);
+        const tip = origin.clone().addScaledVector(dir, arrowLength);
+
+        const isRepulsion = netForce.dot(chargeA.position) > 0;
+        const col = isRepulsion ? new THREE.Color("#ff4d4d") : new THREE.Color("#4dff88");
+
+        positions.push(origin.x, origin.y, origin.z, tip.x, tip.y, tip.z);
+        colors.push(col.r, col.g, col.b, col.r, col.g, col.b);
+
+        const side = new THREE.Vector3(-dir.z, 0, dir.x).normalize().multiplyScalar(0.12);
+        const back = dir.clone().multiplyScalar(0.25);
+        const w1 = tip.clone().sub(back).add(side);
+        const w2 = tip.clone().sub(back).sub(side);
+        positions.push(tip.x, tip.y, tip.z, w1.x, w1.y, w1.z, tip.x, tip.y, tip.z, w2.x, w2.y, w2.z);
+        colors.push(col.r, col.g, col.b, col.r, col.g, col.b, col.r, col.g, col.b, col.r, col.g, col.b);
+      }
+    }
+
+    if (!positions.length) return;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    const material = new THREE.LineBasicMaterial({
+      transparent: true,
+      opacity: 0.95,
+      vertexColors: true,
+      depthWrite: false,
+    });
+    this.coulombLines = new THREE.LineSegments(geometry, material);
+    this.coulombLines.renderOrder = 12;
+    this.group.add(this.coulombLines);
+  }
+
+  simulateCoulombMotion(dt, charges = []) {
+    if (!this.simulationRunning || charges.length < 2) return;
+    const COULOMB_K = 2.0;
+
+    for (let i = 0; i < charges.length; i += 1) {
+      const chargeA = charges[i];
+      if (!this.velocities.has(chargeA.id)) {
+        this.velocities.set(chargeA.id, new THREE.Vector3());
+      }
+      const vel = this.velocities.get(chargeA.id);
+      const netForce = new THREE.Vector3();
+
+      for (let j = 0; j < charges.length; j += 1) {
+        if (i === j) continue;
+        const chargeB = charges[j];
+        const rVec = chargeA.position.clone().sub(chargeB.position);
+        const distSq = Math.max(0.4, rVec.lengthSq());
+        const forceMag = (COULOMB_K * chargeA.charge * chargeB.charge) / distSq;
+        netForce.add(rVec.normalize().multiplyScalar(forceMag));
+      }
+
+      vel.addScaledVector(netForce, dt * 0.8);
+      vel.multiplyScalar(0.98);
+
+      if (this.sceneApi?.updateObjectPosition) {
+        const nextPos = chargeA.position.clone().addScaledVector(vel, dt);
+        this.sceneApi.updateObjectPosition(chargeA.id, [nextPos.x, nextPos.y, nextPos.z]);
+      }
+    }
+  }
+
   rebuildVisuals(charges = [], fluxSurfaces = []) {
     this.rebuildArrowField(charges);
     this.rebuildFluxLines(charges, fluxSurfaces);
     this.rebuildParticles(charges);
+    this.rebuildCoulombForceVectors(charges);
   }
 
   updateParticles(dt, charges = []) {
@@ -333,6 +431,7 @@ export class ElectricFieldManager {
     const dt = Math.min(0.05, Math.max(0.008, (now - this.lastTime) / 1000));
     this.lastTime = now;
     this.updateParticles(dt, charges);
+    this.simulateCoulombMotion(dt, charges);
 
     if (this.fluxLines?.material) {
       this.fluxLines.material.opacity = 0.58 + (Math.sin(now / 240) * 0.12);

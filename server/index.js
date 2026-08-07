@@ -16,6 +16,7 @@ import capabilitiesRoute from "./routes/capabilities.js";
 import chatRoute from "./routes/chat.js";
 import { billingRouter } from "./routes/billing.js";
 import { warmLessonExemplars } from "./services/plan/retrieval.js";
+import { initClassroomWebSocketServer } from "./services/classroomServer.js";
 import { createRateLimit } from "./middleware/rateLimit.js";
 import { authMiddleware } from "./middleware/auth.js";
 import { llmQuotaMiddleware } from "./middleware/llmQuota.js";
@@ -49,8 +50,11 @@ app.route("/api/billing", billingRouter);
 // Health check
 app.get("/api/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
 
-// Serve static files ONLY from ./public — never expose .env.local, server/, or .git/
-app.use("/*", serveStatic({ root: "./public" }));
+import fs from "node:fs";
+
+// Serve static files ONLY from ./dist or ./public — never expose .env.local, server/, or .git/
+const staticRoot = fs.existsSync("./dist") ? "./dist" : "./public";
+app.use("/*", serveStatic({ root: staticRoot }));
 
 const DEFAULT_PORT = parseInt(process.env.PORT || "3000", 10);
 
@@ -83,8 +87,12 @@ if (PORT !== DEFAULT_PORT) {
   console.warn(`Port ${DEFAULT_PORT} is busy, starting Mindscape on ${PORT} instead.`);
 }
 
-serve({ fetch: app.fetch, port: PORT }, (info) => {
+const server = serve({ fetch: app.fetch, port: PORT }, (info) => {
   console.log(`Mindscape server running at http://localhost:${info.port}`);
   console.log(`  API: http://localhost:${info.port}/api/health`);
   console.log(`  App: http://localhost:${info.port}/index.html`);
+  console.log(`  WebSocket Classroom: ws://localhost:${info.port}/ws/classroom`);
 });
+
+initClassroomWebSocketServer(server);
+

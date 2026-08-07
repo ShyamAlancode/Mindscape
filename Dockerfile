@@ -1,17 +1,22 @@
-# Multi-stage production Dockerfile for Mindscape (Node.js + Hono)
+# Multi-stage production Dockerfile for Mindscape (Node.js + Hono + WebSockets)
 
-FROM node:20-alpine AS dependencies
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
+COPY . .
+RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY . .
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/server ./server
+COPY --from=builder /app/src ./src
 
 EXPOSE 3000
 CMD ["npm", "start"]

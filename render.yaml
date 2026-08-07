@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: mindscape-ai
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: API_RATE_LIMIT
+        value: "120"
+      - key: ALLOWED_ORIGINS
+        value: "*"

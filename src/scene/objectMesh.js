@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { parsedModelCache } from "./modelImporter.js";
 import {
   defaultPositionForShape,
   normalizeSceneObject,
@@ -220,6 +221,14 @@ function createMeshForShape(world, spec) {
       return new THREE.Mesh(new THREE.SphereGeometry(spec.params.radius, 16, 12), buildPointMarkerMaterial(spec.color, opacity));
     case "line":
       return buildLineMesh(world, spec.params, spec.color);
+    case "custom_model": {
+      const cached = parsedModelCache.get(spec.params.modelId);
+      if (cached) {
+        return cached.clone();
+      }
+      const dims = spec.params.dimensions || [1, 1, 1];
+      return new THREE.Mesh(new THREE.BoxGeometry(dims[0], dims[1], dims[2]), buildMaterial(spec.color, opacity));
+    }
     default:
       return new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), buildMaterial(spec.color, opacity));
   }

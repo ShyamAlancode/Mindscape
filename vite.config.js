@@ -1,9 +1,7 @@
 import { defineConfig } from "vite";
-import { resolve } from "path";
 
 export default defineConfig({
-  root: "public",
-  publicDir: "assets",
+  root: ".",
   server: {
     port: 5173,
     proxy: {
@@ -12,11 +10,18 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
       },
+      "/ws": {
+        target: "ws://localhost:3000",
+        ws: true,
+      },
     },
   },
   build: {
-    outDir: resolve("dist"),
+    outDir: "dist",
     emptyOutDir: true,
     sourcemap: true,
+    rollupOptions: {
+      external: ["three", /^three\/.*/],
+    },
   },
 });

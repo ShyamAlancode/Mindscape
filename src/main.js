@@ -5,6 +5,9 @@ import { initFloatingChat } from "./ui/chatController.js?v=2";
 import { MeasurementToolManager } from "./render/measurementTools.js";
 import { exportPdfReport } from "./ui/reportExporter.js";
 import { initChallengeUI } from "./ui/challengePanel.js";
+import { initClassroomUI } from "./ui/classroomPanel.js";
+import { initPhysicsController } from "./ui/physicsController.js";
+import { setupDragAndDropImporter } from "./scene/modelImporter.js";
 
 const appContext = bootstrapApp();
 const isDemoMode = new URLSearchParams(window.location.search).get("demo") === "true";
@@ -20,6 +23,11 @@ initFloatingChat();
 
 // Initialize Gamification Banner
 initChallengeUI();
+
+// Initialize Real-Time Classroom, Physics Controller & CAD Drag-and-Drop
+initClassroomUI(appContext);
+initPhysicsController(appContext);
+setupDragAndDropImporter(document.querySelector(".stage-wrap"));
 
 // ─── 3D Measurement & Toolbar Wiring ─────────────────────────────────────────
 let measurementTools = null;

@@ -2551,3 +2551,207 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 5px; }
   color: var(--accent-strong, #7cf7e4);
   text-decoration: underline;
 }
+
+/* ==========================================
+   Physics Simulation & Vector Control Toolbar
+   ========================================== */
+.physics-sim-toolbar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(10, 22, 40, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(124, 247, 228, 0.25);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.physics-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f0f8ff;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sim-btn:hover {
+  background: rgba(124, 247, 228, 0.15);
+  border-color: rgba(124, 247, 228, 0.4);
+  color: #7cf7e4;
+}
+.sim-btn.is-playing {
+  background: rgba(124, 247, 228, 0.25);
+  border-color: #7cf7e4;
+  color: #7cf7e4;
+}
+.sim-btn.is-pos-charge {
+  border-color: rgba(255, 77, 77, 0.4);
+  color: #ff6b6b;
+}
+.sim-btn.is-pos-charge:hover {
+  background: rgba(255, 77, 77, 0.2);
+  border-color: #ff4d4d;
+}
+.sim-btn.is-neg-charge {
+  border-color: rgba(72, 201, 255, 0.4);
+  color: #48c9ff;
+}
+.sim-btn.is-neg-charge:hover {
+  background: rgba(72, 201, 255, 0.2);
+  border-color: #48c9ff;
+}
+
+/* Drag-over active indicator on stage */
+.stage-wrap.drag-over-active {
+  outline: 3px dashed #7cf7e4;
+  outline-offset: -8px;
+  background: rgba(124, 247, 228, 0.05);
+}
+
+/* ==========================================
+   Multi-User Real-Time 3D Classroom Modal
+   ========================================== */
+.classroom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 10, 20, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.classroom-modal-overlay.hidden {
+  display: none !important;
+}
+.classroom-modal {
+  width: 440px;
+  max-width: 90vw;
+  background: #0b172a;
+  border: 1px solid rgba(124, 247, 228, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  color: #f2fbff;
+}
+.classroom-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.classroom-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+.classroom-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.classroom-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 12px 0;
+  color: var(--muted, #8da0b6);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+}
+.classroom-divider::before,
+.classroom-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.classroom-divider span {
+  padding: 0 8px;
+}
+.classroom-join-row {
+  display: flex;
+  gap: 8px;
+}
+.classroom-join-row input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(124, 247, 228, 0.3);
+  background: rgba(8, 18, 33, 0.8);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-align: center;
+}
+.classroom-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(124, 247, 228, 0.12);
+  border: 1px solid rgba(124, 247, 228, 0.3);
+  color: #7cf7e4;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.classroom-badge.hidden {
+  display: none !important;
+}
+.room-status-card {
+  text-align: center;
+  padding: 16px;
+  background: rgba(124, 247, 228, 0.05);
+  border: 1px dashed rgba(124, 247, 228, 0.25);
+  border-radius: 12px;
+}
+.room-code-display {
+  font-size: 2rem;
+  font-family: monospace;
+  letter-spacing: 4px;
+  color: #7cf7e4;
+  margin: 8px 0;
+}
+.classroom-user-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.user-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4dff88;
+}
+

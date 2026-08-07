@@ -21,3 +21,6 @@ docs/
 .codex-runtime/
 output.txt
 test_output.txt
+dist/
+data/mindscape.db
+

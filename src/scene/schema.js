@@ -12,6 +12,7 @@ export const SCENE_SHAPES = [
   "plane",
   "line",
   "pointMarker",
+  "custom_model",
 ];
 
 export const EDITABLE_SHAPES = [
@@ -23,6 +24,7 @@ export const EDITABLE_SHAPES = [
   "pyramid",
   "plane",
   "line",
+  "custom_model",
 ];
 
 export const DEFAULT_SPAWN_PARAMS = {
@@ -35,6 +37,7 @@ export const DEFAULT_SPAWN_PARAMS = {
   plane: { width: 2, depth: 2 },
   line: { start: [0, 0.03, 0], end: [1, 0.03, 0], thickness: 0.08 },
   pointMarker: { radius: 0.08 },
+  custom_model: { modelId: null, fileName: "model.gltf", dimensions: [1, 1, 1] },
 };
 
 function normalizeNumber(value, fallback) {
@@ -101,6 +104,13 @@ export function normalizeParams(shape, params = {}) {
       };
     case "pointMarker":
       return { radius: normalizeNumber(params.radius, defaults.radius) };
+    case "custom_model":
+      return {
+        modelId: params.modelId || null,
+        fileName: params.fileName || "model.gltf",
+        format: params.format || "gltf",
+        dimensions: Array.isArray(params.dimensions) ? params.dimensions : [1, 1, 1],
+      };
     default:
       return defaults;
   }
@@ -148,6 +158,8 @@ export function defaultPositionForShape(shape, params = defaultParamsForShape(sh
       return [0, params.radius, 0];
     case "line":
       return [0.5, 0.03, 0];
+    case "custom_model":
+      return [0, (params.dimensions?.[1] || 1) / 2, 0];
     default:
       return [...DEFAULT_POSITION];
   }
@@ -173,6 +185,8 @@ export function paramsToBaseSize(shape, params = defaultParamsForShape(shape)) {
       return Math.max(params.thickness || 0.08, distanceBetween(params.start, params.end));
     case "pointMarker":
       return params.radius * 2;
+    case "custom_model":
+      return Math.max(...(params.dimensions || [1, 1, 1]));
     default:
       return 1;
   }
