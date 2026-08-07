@@ -6,7 +6,7 @@ export function initClassroomUI(appContext) {
   classroomClient = new ClassroomClient(appContext);
 
   const topbarTools = document.querySelector(".topbar-tools");
-  if (!topbarTools) return;
+  if (!topbarTools) return classroomClient;
 
   const classroomCluster = document.createElement("div");
   classroomCluster.className = "tool-cluster classroom-cluster";

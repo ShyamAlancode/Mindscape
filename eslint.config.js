@@ -22,6 +22,7 @@ export default [
       "models/**",
       "scratch/**",
       "test_api.mjs",
+      "dist/**",
     ],
   },
   js.configs.recommended,

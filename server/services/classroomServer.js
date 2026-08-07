@@ -25,7 +25,7 @@ export function initClassroomWebSocketServer(server) {
 
   wss.on("connection", (ws) => {
     let currentRoomId = null;
-    let userId = `user_${Math.random().toString(36).substring(2, 9)}`;
+    const userId = `user_${Math.random().toString(36).substring(2, 9)}`;
     let userName = "Learner";
 
     ws.on("message", (rawMessage) => {

@@ -39,6 +39,9 @@ export class ElectricFieldManager {
     this.fluxLines = null;
     this.particles = null;
     this.particleStates = [];
+    this.coulombLines = null;
+    this.velocities = new Map();
+    this.simulationRunning = false;
   }
 
   collectPhysicsObjects() {
